@@ -1,19 +1,21 @@
 package com.pisethjavaschool.userservice.user.mapper;
 
+import java.util.UUID;
+
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.pisethjavaschool.userservice.user.entity.UserAccount;
-import com.pisethjavaschool.userservice.user.entity.UserProfile;
-import com.pisethjavaschool.userservice.user.enums.AccountStatus;
-import com.pisethjavaschool.userservice.user.enums.RegistrationStatus;
 import com.pisethjavaschool.userservice.user.dto.CreateUserRequest;
 import com.pisethjavaschool.userservice.user.dto.UpdateUserRequest;
 import com.pisethjavaschool.userservice.user.dto.UserIdentityResponse;
 import com.pisethjavaschool.userservice.user.dto.UserResponse;
+import com.pisethjavaschool.userservice.user.entity.UserAccount;
+import com.pisethjavaschool.userservice.user.entity.UserProfile;
+import com.pisethjavaschool.userservice.user.enums.AccountStatus;
+import com.pisethjavaschool.userservice.user.enums.RegistrationStatus;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -34,7 +36,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userAccountId", source = "userAccountId")
     @Mapping(target = "dateOfBirth", ignore = true)
-    UserProfile toProfile(CreateUserRequest request, java.util.UUID userAccountId);
+    UserProfile toProfile(CreateUserRequest request, UUID userAccountId);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)

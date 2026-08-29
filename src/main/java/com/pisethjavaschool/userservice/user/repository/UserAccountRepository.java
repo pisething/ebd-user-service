@@ -7,8 +7,10 @@ import com.pisethjavaschool.userservice.user.entity.UserAccount;
 import com.pisethjavaschool.userservice.user.enums.UserType;
 
 public interface UserAccountRepository extends ReactiveCrudRepository<UserAccount, UUID> {
-    Mono<UserAccount> findByUsernameIgnoreCaseAndUserType(String username, UserType userType);
-    Mono<Boolean> existsByUsernameIgnoreCase(String username);
-    Mono<UserAccount> findByKeycloakUserId(String keycloakUserId);
+	Mono<UserAccount> findByUsernameIgnoreCaseAndUserType(String username, UserType userType);
+
+	Mono<Boolean> existsByUsernameIgnoreCase(String username);
+
+	Mono<UserAccount> findByKeycloakUserId(String keycloakUserId);
 
 }
