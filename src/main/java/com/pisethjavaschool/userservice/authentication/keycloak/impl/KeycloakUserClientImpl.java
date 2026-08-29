@@ -29,15 +29,21 @@ public class KeycloakUserClientImpl implements KeycloakUserClient {
         body.put("enabled", enabled);
         body.put("credentials", List.of(Map.of("type", "password", "value", password, "temporary", false)));
         return adminToken()
-                .flatMap(token -> client().post().uri(adminUsersUri()).headers(h -> h.setBearerAuth(token)).contentType(MediaType.APPLICATION_JSON).bodyValue(body).exchangeToMono(response -> {
-                    if (response.statusCode().is2xxSuccessful()) {
-                        URI location = response.headers().asHttpHeaders().getLocation();
-                        if (location == null) {
-                            return Mono.error(new KeycloakIntegrationException("Keycloak did not return user location."));
-                        }
-                        String path = location.getPath();
-                        return Mono.just(path.substring(path.lastIndexOf('/') + 1));
-                    }
+                .flatMap(token -> client()
+                		.post()
+                		.uri(adminUsersUri())
+                		.headers(h -> h.setBearerAuth(token))
+                		.contentType(MediaType.APPLICATION_JSON)
+                		.bodyValue(body)
+                		.exchangeToMono(response -> {
+			                    if (response.statusCode().is2xxSuccessful()) {
+			                        URI location = response.headers().asHttpHeaders().getLocation();
+			                        if (location == null) {
+			                            return Mono.error(new KeycloakIntegrationException("Keycloak did not return user location."));
+			                        }
+			                        String path = location.getPath();
+			                        return Mono.just(path.substring(path.lastIndexOf('/') + 1));
+			                    }
                     return response.bodyToMono(String.class).defaultIfEmpty("").flatMap(error -> Mono.error(new KeycloakIntegrationException("Create Keycloak user failed: " + error)));
                 }));
     }
@@ -75,11 +81,16 @@ public class KeycloakUserClientImpl implements KeycloakUserClient {
     }
 
     private Mono<String> adminToken() {
-        return client().post().uri(tokenUri()).contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        return client()
+        		.post()
+        		.uri(tokenUri())
+        		.contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData("grant_type", "client_credentials")
                         .with("client_id", properties.admin().clientId())
                         .with("client_secret", properties.admin().clientSecret()))
-                .retrieve().bodyToMono(Map.class).map(map -> String.valueOf(map.get("access_token")));
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(map -> String.valueOf(map.get("access_token")));
     }
     
     @Override

@@ -39,10 +39,10 @@ keycloak:
   realm: ${KEYCLOAK_REALM:restaurant-ktv-platform}
   admin:
     client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:user-service}
-    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:Ea0sBEuJkJSAt34JIIOYrXffbQEbSRSB}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:dvCOJLppnL9fFD7sGKdHk4fO7jTMPaQY}
   login:
     client-id: ${KEYCLOAK_LOGIN_CLIENT_ID:user-login}
-    client-secret: ${KEYCLOAK_LOGIN_CLIENT_SECRET:xUGbftWyuhAmlNciURkaWVO13sAl8GfT}
+    client-secret: ${KEYCLOAK_LOGIN_CLIENT_SECRET:gsifWhcQNoIgdEDuQopjR1hiIxxTavlB}
 
 #platform:
 #  clients:
