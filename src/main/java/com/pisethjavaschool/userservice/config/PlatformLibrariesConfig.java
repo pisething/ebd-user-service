@@ -3,6 +3,7 @@ package com.pisethjavaschool.userservice.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.pisethjavaschool.platform.accesscontrol.client.config.AccessControlClientConfiguration;
 import com.pisethjavaschool.platform.exception.GlobalExceptionHandler;
 import com.pisethjavaschool.platform.openapi.PlatformOpenApiConfig;
 import com.pisethjavaschool.platform.r2dbc.PlatformReactiveTransactionManagementConfig;
@@ -15,6 +16,7 @@ import com.pisethjavaschool.platform.web.RequestIdWebFilter;
 @Import({
         GlobalExceptionHandler.class,
         PlatformOpenApiConfig.class,
+        AccessControlClientConfiguration.class,
         PlatformReactiveTransactionManagementConfig.class,
         SecurityCurrentAuditorProvider.class,
         CurrentUserReaderConfiguration.class,
