@@ -2,13 +2,16 @@ package com.pisethjavaschool.userservice.platformstaff.facade.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.pisethjavaschool.userservice.user.enums.UserType;
+
+import com.pisethjavaschool.platform.accesscontrol.client.AccessControlClient;
+import com.pisethjavaschool.platform.accesscontrol.client.enums.AccessRoleCode;
 import com.pisethjavaschool.userservice.platformstaff.dto.CreatePlatformStaffRequest;
-import com.pisethjavaschool.userservice.user.dto.UserResponse;
 import com.pisethjavaschool.userservice.platformstaff.facade.PlatformStaffManagementFacade;
 import com.pisethjavaschool.userservice.platformstaff.mapper.PlatformStaffMapper;
-import com.pisethjavaschool.userservice.common.client.AccessControlClient;
+import com.pisethjavaschool.userservice.user.dto.UserResponse;
+import com.pisethjavaschool.userservice.user.enums.UserType;
 import com.pisethjavaschool.userservice.user.service.UserCommandService;
+
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -27,7 +30,18 @@ public class PlatformStaffManagementFacadeImpl implements PlatformStaffManagemen
         }
 
         return userCommandService.create(mapper.toCreateUserRequest(request, staffType))
-                .flatMap(user -> accessControlClient.assignDefaultRole(user.id(), staffType, null)
+                .flatMap(user -> accessControlClient.assignRole(//
+                                user.id(),
+                                toAccessRoleCode(staffType),
+                                null)
                         .thenReturn(user));
+    }
+
+    private AccessRoleCode toAccessRoleCode(UserType staffType) {
+        return switch (staffType) {
+            case SYSTEM_ADMIN -> AccessRoleCode.SYSTEM_ADMIN;
+            case PLATFORM_STAFF -> AccessRoleCode.PLATFORM_STAFF;
+            default -> throw new IllegalArgumentException("Unsupported platform staff type: " + staffType);
+        };
     }
 }

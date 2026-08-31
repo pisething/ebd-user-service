@@ -1,19 +1,21 @@
 package com.pisethjavaschool.userservice.user.service.impl;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.pisethjavaschool.platform.common.pagination.PageResponse;
 import com.pisethjavaschool.platform.r2dbc.SqlPageSupport;
+import com.pisethjavaschool.userservice.common.exception.NotFoundException;
+import com.pisethjavaschool.userservice.user.dto.UserIdentityResponse;
+import com.pisethjavaschool.userservice.user.dto.UserResponse;
 import com.pisethjavaschool.userservice.user.entity.UserAccount;
 import com.pisethjavaschool.userservice.user.entity.UserProfile;
 import com.pisethjavaschool.userservice.user.enums.UserType;
-import com.pisethjavaschool.userservice.user.dto.UserIdentityResponse;
-import com.pisethjavaschool.userservice.user.dto.UserResponse;
-import com.pisethjavaschool.userservice.common.exception.NotFoundException;
 import com.pisethjavaschool.userservice.user.mapper.UserMapper;
 import com.pisethjavaschool.userservice.user.repository.UserAccountRepository;
+import com.pisethjavaschool.userservice.user.repository.UserAccountSearchRepository;
 import com.pisethjavaschool.userservice.user.repository.UserProfileRepository;
 import com.pisethjavaschool.userservice.user.service.UserQueryService;
 
@@ -26,6 +28,7 @@ public class UserQueryServiceImpl implements UserQueryService {
     private final UserAccountRepository accountRepository;
     private final UserProfileRepository profileRepository;
     private final UserMapper mapper;
+    private final UserAccountSearchRepository accountSearchRepository;
 
     @Override
     public Mono<UserResponse> findById(UUID id) {
@@ -41,6 +44,7 @@ public class UserQueryServiceImpl implements UserQueryService {
                 .map(mapper::toIdentityResponse);
     }
 
+    /*
     @Override
     public Mono<PageResponse<UserResponse>> search(UserType userType, String keyword, int page, int size) {
         int safePage = SqlPageSupport.safePage(page);
@@ -60,6 +64,34 @@ public class UserQueryServiceImpl implements UserQueryService {
                             safeSize,
                             totalPages
                     );
+                });
+    }
+    */
+    
+    @Override
+    public Mono<PageResponse<UserResponse>> search(UserType userType, String keyword, int page, int size) {
+        int safePage = SqlPageSupport.safePage(page);
+        int safeSize = SqlPageSupport.safeSize(size);
+        long offset = SqlPageSupport.offset(safePage, safeSize);
+
+        Mono<List<UserResponse>> items = accountSearchRepository
+                .search(userType, keyword, offset, safeSize)
+                .flatMapSequential(this::toResponse)
+                .collectList();
+
+        Mono<Long> totalElements = accountSearchRepository.count(userType, keyword);
+
+        return Mono.zip(items, totalElements)
+                .map(result -> {
+                    long total = result.getT2();
+                    int totalPages = (int) ((total + safeSize - 1) / safeSize);
+
+                    return new PageResponse<>(
+                            result.getT1(),
+                            total,
+                            safePage,
+                            safeSize,
+                            totalPages);
                 });
     }
 
