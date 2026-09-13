@@ -1,13 +1,13 @@
 package com.pisethjavaschool.userservice.businessowner.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-
+import com.pisethjavaschool.platform.propertyowner.client.dto.OwnerType;
 import com.pisethjavaschool.userservice.businessowner.enums.BusinessType;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record BusinessOwnerRegistrationRequest(
 
@@ -47,6 +47,9 @@ public record BusinessOwnerRegistrationRequest(
 
         @NotNull(message = "Business type is required")
         BusinessType businessType,
+        
+        @NotNull(message = "Owner type is required")
+        OwnerType ownerType, 
 
         @Size(max = 150, message = "Business name must not exceed 150 characters")
         String businessName,

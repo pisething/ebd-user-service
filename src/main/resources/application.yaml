@@ -58,7 +58,10 @@ platform:
   clients:
     access-control:
       base-url: ${ACCESS_CONTROL_SERVICE_URL:http://localhost:8097}
-      root-path: /api/v1/access-control
+      root-path: /api/v1/access-control			
+    property-owner:
+      base-url: ${PROPERTY_OWNER_SERVICE_URL:http://localhost:8069}
+      root-path: /api/v1/property-owners			
 
 
 management:

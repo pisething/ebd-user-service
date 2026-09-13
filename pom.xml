@@ -68,15 +68,20 @@
             <artifactId>platform-openapi</artifactId>
             <version>${platform-libraries.version}</version>
         </dependency>
+        <dependency>
+		    <groupId>com.pisethjavaschool.platform</groupId>
+		    <artifactId>platform-security</artifactId>
+		    <version>${platform-libraries.version}</version>
+		</dependency>
 
         <dependency>
             <groupId>com.pisethjavaschool.platform</groupId>
-            <artifactId>platform-security</artifactId>
+            <artifactId>platform-access-control-client</artifactId>
             <version>${platform-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>com.pisethjavaschool.platform</groupId>
-            <artifactId>platform-access-control-client</artifactId>
+            <artifactId>platform-property-owner-client</artifactId>
             <version>${platform-libraries.version}</version>
         </dependency>
 
