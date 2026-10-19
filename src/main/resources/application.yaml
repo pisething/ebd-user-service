@@ -16,6 +16,16 @@ spring:
 
   security:
     oauth2:
+      client:
+        registration:
+          user-service-provisioning:
+            provider: provisioning-keycloak
+            client-id: ${PROVISIONING_CLIENT_ID:user-service-provisioning}
+            client-secret: ${PROVISIONING_CLIENT_SECRET:llObwT2g150VNBThdtHLR97XWQEWlsJD}
+            authorization-grant-type: client_credentials
+        provider:
+          provisioning-keycloak:
+            token-uri: ${PROVISIONING_TOKEN_URI:http://localhost:9292/realms/restaurant-ktv-platform/protocol/openid-connect/token}
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9292/realms/restaurant-ktv-platform}
