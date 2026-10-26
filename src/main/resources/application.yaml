@@ -21,7 +21,7 @@ spring:
           user-service-provisioning:
             provider: provisioning-keycloak
             client-id: ${PROVISIONING_CLIENT_ID:user-service-provisioning}
-            client-secret: ${PROVISIONING_CLIENT_SECRET:llObwT2g150VNBThdtHLR97XWQEWlsJD}
+            client-secret: ${PROVISIONING_CLIENT_SECRET:swOEo6mgGZ0W1eyHfjOzZRKZeCXVQtyb}
             authorization-grant-type: client_credentials
         provider:
           provisioning-keycloak:
@@ -88,3 +88,6 @@ management:
 logging:
   level:
     com.pisethjavaschool.userservice: INFO
+# Registration orchestrator requires provisioning credentials.
+platform.clients.property-owner.provisioning.enabled: true
+platform.clients.access-control.provisioning.enabled: true
