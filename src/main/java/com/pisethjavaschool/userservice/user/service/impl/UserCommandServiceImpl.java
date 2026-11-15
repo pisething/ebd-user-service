@@ -18,6 +18,7 @@ import com.pisethjavaschool.userservice.user.entity.UserAccount;
 import com.pisethjavaschool.userservice.user.entity.UserProfile;
 import com.pisethjavaschool.userservice.user.enums.AccountStatus;
 import com.pisethjavaschool.userservice.user.enums.RegistrationStatus;
+import com.pisethjavaschool.userservice.user.exception.InvalidRegistrationStateException;
 import com.pisethjavaschool.userservice.user.mapper.UserMapper;
 import com.pisethjavaschool.userservice.user.repository.UserAccountRepository;
 import com.pisethjavaschool.userservice.user.repository.UserProfileRepository;
