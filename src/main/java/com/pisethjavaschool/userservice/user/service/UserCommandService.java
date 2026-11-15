@@ -12,6 +12,8 @@ public interface UserCommandService {
 	Mono<UserResponse> create(CreateUserRequest request);
 
 	Mono<UserResponse> update(UUID id, UpdateUserRequest request);
+	
+	Mono<UserResponse> createPendingRegistration(CreateUserRequest request); // NEW
 
 	Mono<Void> delete(UUID id);
 

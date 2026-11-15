@@ -1,6 +1,16 @@
 spring:
   application:
     name: user-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:7072}
+    consumer:
+      group-id: user-service-registration
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5436}/${DB_NAME:platform_user}
@@ -84,6 +94,13 @@ keycloak:
 #      root-path: /api/v1/business-owners
 
 platform:
+  kafka:
+    registration-topics:
+      enabled: true
+  outbox:
+    relay:
+      enabled: true
+      poll-interval-ms: 1000
   clients:
     access-control:
       base-url: ${ACCESS_CONTROL_SERVICE_URL:http://access-control-service}

@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-business-owner-registration-table
+      author: pisethjavaschool
+      changes:
+        - createTable:
+            tableName: business_owner_registration
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: platform_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: status
+                  type: varchar(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: business_owner_registration
+            indexName: idx_business_owner_registration_status
+            columns:
+              - column:
+                  name: status

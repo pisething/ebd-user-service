@@ -35,35 +35,31 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserMapper mapper;
     private final UsernameResolver usernameResolver;
     private final PasswordPolicy passwordPolicy;
-    
- // Explicit system actor for public registration. No JWT or Keycloak subject fallback.
-    // The UUID is reserved for registration operations, not an end-user identity.
-    private static final UUID REGISTRATION_SYSTEM_AUDITOR =
-            UUID.fromString("00000000-0000-0000-0000-000000000001");
 
-/*
     @Override
     @Transactional
     public Mono<UserResponse> create(CreateUserRequest request) {
-        String username = usernameResolver.resolve(request.email(), request.countryCode(), request.phoneNumber());
-        return passwordPolicy.validate(request.password())
-                .then(validateUniqueUsername(username))
-                .then(createIdentity(request, username))
-                .flatMap(account -> createProfile(account, request)
-                        .map(profile -> mapper.toResponse(account, profile)));
+        return createUser(request, AccountStatus.ACTIVE, RegistrationStatus.COMPLETED);
     }
-    */
-    
+
     @Override
     @Transactional
-    public Mono<UserResponse> create(CreateUserRequest request) {
-        String username = usernameResolver.resolve(request.email(), request.countryCode(), request.phoneNumber());
+    public Mono<UserResponse> createPendingRegistration(CreateUserRequest request) {
+        return createUser(request, AccountStatus.INACTIVE, RegistrationStatus.PENDING_VERIFICATION);
+    }
+
+    private Mono<UserResponse> createUser(
+            CreateUserRequest request,
+            AccountStatus accountStatus,
+            RegistrationStatus registrationStatus) {
+        String username = usernameResolver.resolve(
+                request.email(), request.countryCode(), request.phoneNumber());
         Mono<UserResponse> registration = passwordPolicy.validate(request.password())
                 .then(validateUniqueUsername(username))
-                .then(createIdentity(request, username))
+                .then(createIdentity(request, username, accountStatus, registrationStatus))
                 .flatMap(account -> createProfile(account, request)
                         .map(profile -> mapper.toResponse(account, profile)));
-        return PlatformAuditorContext.withAuditorId(registration, REGISTRATION_SYSTEM_AUDITOR);
+        return PlatformAuditorContext.withAuditorId(registration, PlatformAuditorContext.REGISTRATION_SYSTEM_AUDITOR);
     }
 
     @Override
@@ -109,7 +105,8 @@ public class UserCommandServiceImpl implements UserCommandService {
     private Mono<UserAccount> updateAccount(UserAccount account, UpdateUserRequest request) {
         String username = usernameResolver.resolve(request.email(), request.countryCode(), request.phoneNumber());
         mapper.updateAccount(request, username, account);
-        boolean enabled = account.getAccountStatus() == AccountStatus.ACTIVE;
+        boolean enabled = account.getAccountStatus() == AccountStatus.ACTIVE
+                && account.getRegistrationStatus() == RegistrationStatus.COMPLETED;
         return keycloakUserClient.updateUser(account.getKeycloakUserId(), account.getEmail(), request.firstName(), request.lastName(), enabled)
                 .then(accountRepository.save(account));
     }
@@ -128,42 +125,35 @@ public class UserCommandServiceImpl implements UserCommandService {
         return accountRepository.findById(id)
                 .switchIfEmpty(Mono.error(new NotFoundException("User account not found.")))
                 .flatMap(account -> {
-                    account.setAccountStatus(status);
+                    if (status == AccountStatus.ACTIVE
+                            && account.getRegistrationStatus() != RegistrationStatus.COMPLETED) {
+                        return Mono.error(new InvalidRegistrationStateException(
+                                account.getRegistrationStatus()));
+                    }
                     boolean enabled = status == AccountStatus.ACTIVE;
                     return keycloakUserClient.updateUser(account.getKeycloakUserId(), account.getEmail(), null, null, enabled)
-                            .then(accountRepository.save(account));
+                            .then(Mono.defer(() -> {
+                                account.setAccountStatus(status);
+                                return accountRepository.save(account);
+                            }));
                 })
                 .flatMap(account -> profileRepository.findByUserAccountId(account.getId())
                         .map(profile -> mapper.toResponse(account, profile)));
     }
-    /*
-    private Mono<UserAccount> createIdentity(CreateUserRequest request, String username) {
-        return keycloakUserClient.createUser(username, request.email(), request.firstName(), request.lastName(), request.password(), true)
+    private Mono<UserAccount> createIdentity(
+            CreateUserRequest request,
+            String username,
+            AccountStatus accountStatus,
+            RegistrationStatus registrationStatus) {
+        boolean enabled = accountStatus == AccountStatus.ACTIVE;
+        return keycloakUserClient.createUser(username, request.email(), request.firstName(),
+                        request.lastName(), request.password(), enabled)
                 .flatMap(keycloakUserId -> {
                     UserAccount account = mapper.toAccount(
-                            request,
-                            username,
-                            keycloakUserId,
-                            AccountStatus.ACTIVE,
-                            RegistrationStatus.COMPLETED
-                    );
-                    return accountRepository.save(account);
-                });
-    }
-    */
-    
-    private Mono<UserAccount> createIdentity(CreateUserRequest request, String username) {
-        return keycloakUserClient.createUser(username, request.email(), request.firstName(), request.lastName(), request.password(), true)
-                .flatMap(keycloakUserId -> {
-                    UserAccount account = mapper.toAccount(
-                            request,
-                            username,
-                            keycloakUserId,
-                            AccountStatus.ACTIVE,
-                            RegistrationStatus.COMPLETED
-                    );
+                            request, username, keycloakUserId, accountStatus, registrationStatus);
                     return accountRepository.save(account)
-                            .flatMap(saved -> keycloakUserClient.setPlatformUserId(keycloakUserId, saved.getId()) // NEW
+                            .flatMap(saved -> keycloakUserClient
+                                    .setPlatformUserId(keycloakUserId, saved.getId())
                                     .thenReturn(saved));
                 });
     }
